@@ -1,0 +1,38 @@
+{extend name='admin@public/content'}
+
+{block name="content"}
+<div class="layui-collapse" lay-accordion="">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">系统简介</h2>
+        <div class="layui-colla-content layui-show">
+            <p></p>
+        </div>
+    </div>
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">业务流程</h2>
+        <div class="layui-colla-content">
+            <ul class="layui-timeline">
+                <li class="layui-timeline-item">
+                    <i class="layui-icon layui-timeline-axis"></i>
+                    <div class="layui-timeline-content layui-text">
+                        <div class="layui-timeline-title"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="__STATIC__/plugs/layui/layui.all.js"></script>
+<script>
+    layui.use(['element', 'layer'], function(){
+        var element = layui.element;
+        var layer = layui.layer;
+
+        //监听折叠
+        element.on('collapse(test)', function(data){
+            layer.msg('展开状态：'+ data.show);
+        });
+    });
+</script>
+{/block}

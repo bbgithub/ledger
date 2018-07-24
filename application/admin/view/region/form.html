@@ -1,0 +1,57 @@
+<style>
+    select.block{
+        display:none!important;
+    }
+</style>
+<form autocomplete="off" class="layui-form layui-box modal-form-box" action="{:request()->url()}" data-auto="true" method="post">
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属区域</label>
+        <div class="layui-input-block">
+            <select name='parent_region_code' class='layui-select full-width block' lay-filter="region_code">
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach cates as $cate}-->
+                <!--{eq name='cate.region_code' value='$vo.region_code|default=0|substr=0,-2'}-->
+                <option selected value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name|default=''}</option>
+                <!--{else}-->
+                <option value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+            <input name="region_code" value='{$vo.region_code|default=""}' type="hidden">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">区域名称</label>
+        <div class="layui-input-block">
+            <input autofocus name="region_name" value='{$vo.region_name|default=""}' required title="请输入区域" placeholder="请输入区域" class="layui-input">
+            <!--<input name="pid" value='{$vo.pid|default=""}'>-->
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'/>{/if}
+        <button lay-submit lay-filter="*" class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="" data-close>取消编辑</button>
+    </div>
+    <div style="height:150px;"></div>
+</form>
+
+<script>
+//    require(['jquery'], function () {
+//        $('select[name=region_code]').on('change', function(){
+//            alert('sdfsd');
+////            var region_code = $(this).find('option:selected').attr('region_code');
+////            $('input[name=region_code]').val(region_code);
+//        });
+//    });
+    (function () {
+        window.form.render();
+//        form.on('select(region_code)', function(data){
+//            console.log(data);
+////            $('input[name=pid]').val(data.value);
+//        });
+    })();
+</script>

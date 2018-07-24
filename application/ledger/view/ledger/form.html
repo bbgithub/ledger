@@ -1,0 +1,153 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+<!--{if auth("$classuri/index")}-->
+<button data-open='{:url("$classuri/index")}' data-title="台账审核" class='layui-btn layui-btn-sm layui-btn-primary'>台账审核</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<form autocomplete="off" onsubmit="return false;" action="{:request()->url()}" data-auto="true" method="post" class='form-horizontal padding-top-20'>
+    {if empty($details)}
+    <p class="help-block text-center well">没 有 记 录 哦！</p>
+    {else}
+    <table class="layui-table" lay-skin="nob">
+        <thead>
+        <tr class="layui-bg-red">
+            <th class='text-left nowrap'>台账日期</th>
+            <th class='text-left nowrap'>客户区域</th>
+            <th class='text-left nowrap'>客户名</th>
+            <th class='text-left nowrap'>客户类型</th>
+            <th class='text-left nowrap'>所属业务员</th>
+            <th class='text-left nowrap'>客户地址</th>
+            <th class='text-left nowrap'>上月结转</th>
+            <th class='text-left nowrap'>台账状态</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class='text-left nowrap'>{$details.0.ledger_date|date='Y-m'}</td>
+            <td class='text-left nowrap'>{$details.0.cust_region_name}</td>
+            <td class='text-left nowrap'>{$details.0.cust_name}</td>
+            <td class='text-left nowrap'>
+                {switch $details.0.cust_type}
+                {case 1}<span class="layui-badge layui-bg-orange">仓储服务商</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-green">物流配送商</span>{/case}
+                {case 3}<span class="layui-badge layui-bg-cyan">分公司</span>{/case}
+                {case 4}<span class="layui-badge layui-bg-blue">KA</span>{/case}
+                {case 5}<span class="layui-badge layui-bg-black">盐业公司</span>{/case}
+                {default /}
+                {/switch}
+            </td>
+            <td class='text-left nowrap'>{$details.0.sales_real_name}</td>
+            <td class='text-left nowrap'>{$details.0.addr}</td>
+            <td class='text-left nowrap'>{$vo.last_carry_down|default=''}</td>
+            <td class='text-left nowrap'>
+                {switch $vo.status}
+                {case 0}<span class="layui-badge layui-bg-gray">未冻结</span>{/case}
+                {case 1}<span class="layui-badge layui-bg-green">已冻结</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-orange">已审核</span>{/case}
+                {default /}<span class="layui-badge layui-bg-gray">未冻结</span>
+                {/switch}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <table class="layui-table" lay-skin="line">
+        <thead>
+        <tr>
+            <!--<th class='text-left nowrap'>台账日期</th>-->
+            <!--<th class='text-left nowrap'>客户区域</th>-->
+            <!--<th class='text-left nowrap'>客户名</th>-->
+            <!--<th class='text-left nowrap'>客户类型</th>-->
+            <!--<th class='text-left nowrap'>业务员</th>-->
+            <th class='text-left nowrap'>台账类型</th>
+            <th class='text-left nowrap'>商品名</th>
+            <th class='text-left nowrap'>商品编码</th>
+            <th class='text-left nowrap'>销售方式</th>
+            <th class='text-left nowrap'>标准吨价</th>
+            <th class='text-left nowrap'>数量</th>
+            <th class='text-left nowrap'>单价</th>
+            <th class='text-left nowrap'>金额</th>
+            <th class='text-left nowrap'>运费</th>
+            <th class='text-left nowrap'>包材品种差价</th>
+            <th class='text-left nowrap'>折后出厂价</th>
+            <th class='text-left nowrap'>销售费</th>
+            <th class='text-left nowrap'>市场费</th>
+            <th class='text-left nowrap'>原盐差价</th>
+            <th class='text-left nowrap'>政策返利</th>
+            <th class='text-left nowrap'>收退款金额</th>
+            <th class='text-left nowrap'>提成系数</th>
+            <th class='text-left nowrap'>提成金额</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $details as $key=>$detail}
+        <tr>
+            <td class='text-left nowrap'>
+                {switch $detail.ledger_type_id}
+                {case 1}<span class="layui-badge layui-bg-orange">发货</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-green">退货</span>{/case}
+                {case 3}<span class="layui-badge layui-bg-cyan">收款</span>{/case}
+                {case 4}<span class="layui-badge layui-bg-blue">退款</span>{/case}
+                {default /}
+                {/switch}
+            </td>
+            <td class='text-left nowrap'>{$detail.tun_per_price}</td>
+            <td class='text-left nowrap'><div class="gd1" title="{$detail.goods_name}">{$detail.goods_name}</div></td>
+            <td class='text-left nowrap'>{$detail.goods_no}</td>
+            <td class='text-left nowrap'>{$detail.sales_mode_name}</td>
+            <td class='text-left nowrap'>{$detail.qty}</td>
+            <td class='text-left nowrap'>{$detail.unit_price}</td>
+            <td class='text-left nowrap'>{$detail.amount}</td>
+            <td class='text-left nowrap'>{$detail.trans_fee}</td>
+            <td class='text-left nowrap'>{$detail.spread_price}</td>
+            <td class='text-left nowrap'>{$detail.discount_price}</td>
+            <td class='text-left nowrap'>{$detail.sales_fee}</td>
+            <td class='text-left nowrap'>{$detail.market_fee}</td>
+            <td class="text-left nowrap">{$detail.salt_spread_price}</td>
+            <td class="text-left nowrap">{$detail.rebate}</td>
+            <td class='text-left nowrap'>{$detail.receipt_refund}</td>
+            <td class='text-left nowrap'>{$detail.profit_rate}</td>
+            <td class='text-left nowrap'>{$detail.profit_amount}</td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
+    {if isset($page)}<p>{$page|raw}</p>{/if}
+    {/if}
+
+    <div class="hr-line-dashed"></div>
+
+    {if auth("$classuri/audit")}
+    {eq name='$vo.status' value='1'}
+    <div class="col-sm-7 col-sm-offset-2">
+        <div class="layui-form-item text-center">
+            {if !empty($vo.id)}<input type="hidden" name="id" value="{$vo.id}">{/if}
+            <input type="hidden" id="status" name="status" value="">
+            <button class="layui-btn" lay-submit lay-filter="*" onclick="audit(2)">审核通过</button>
+            <button class="layui-btn layui-btn-danger" lay-submit lay-filter="*" onclick="audit(0)">审核拒绝</button>
+        </div>
+    </div>
+    {/eq}
+    {/if}
+    <script>
+        function audit(v){
+            $('#status').val(v);
+        }
+    </script>
+
+    <style>
+        .background-item {
+            padding: 15px;
+            background: #efefef;
+        }
+
+        .background-item thead tr {
+            background: #e0e0e0
+        }
+    </style>
+</form>
+{/block}

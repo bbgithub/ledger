@@ -1,0 +1,165 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+<!--{if auth("$classuri/audit")}-->
+<button data-update data-field='audit' data-value="2" data-action='{:url("$classuri/audit")}' data-title="批量审核" class='layui-btn layui-btn-sm layui-btn-primary'>批量审核</button>
+<button data-update data-field='audit' data-value="0" data-action='{:url("$classuri/audit")}' data-title="批量拒绝" class='layui-btn layui-btn-sm layui-btn-primary'>批量拒绝</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<style>
+    .layui-table td, .layui-table th {
+        padding: 9px 0px;
+        min-height: 20px;
+        line-height: 20px;
+    }
+</style>
+<!-- 表单搜索 开始 -->
+<form autocomplete="off" class="layui-form layui-form-pane form-search" action="{:request()->url()}" onsubmit="return false" method="get">
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">台账日期</label>
+        <div class="layui-input-inline">
+            <input name="ledger_date" id='ledger_date' value="{$Think.get.ledger_date|default=''}" placeholder="请选台账日期" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">区域</label>
+        <div class="layui-input-inline">
+            <select name='region_code' lay-search>
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach cates as $cate}-->
+                <!--{eq name='cate.region_code' value='$Think.get.region_code|default=0'}-->
+                <option selected value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name|default=''}</option>
+                <!--{else}-->
+                <option value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-inline">
+            <select name="status" lay-search>
+                <option {if $Think.get.status===''}selected="selected"{/if} value="">=== 请选择 ===</option>
+                <option {if $Think.get.status==='1'}selected="selected"{/if} value="1">已冻结</option>
+                <option {if $Think.get.status==='2'}selected="selected"{/if} value="2">已审核</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">客户名</label>
+        <div class="layui-input-inline">
+            <input name="cust_name" value="{$Think.get.cust_name|default=''}" placeholder="请输入客户名" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">所属业务员</label>
+        <div class="layui-input-inline">
+            <select name="sales_id" lay-verify="required" lay-search>
+                <option value=''>=== 请选择 ===</option>
+                <!--{foreach saleses as $sales}-->
+                <!--{eq name='sales.id' value='$Think.get.sales_id|default=0'}-->
+                <option selected value='{$sales.id}'>{$sales.real_name}</option>
+                <!--{else}-->
+                <option value='{$sales.id}'>{$sales.real_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+
+</form>
+<script>
+    window.laydate.render({
+        range: false,
+        elem: '#ledger_date',
+        type:'month',
+        showBottom:true,
+        change: function(value){
+            $('#ledger_date').val(value);
+            $('.layui-laydate').remove();
+        }
+    });
+    window.form.render();
+</script>
+<!-- 表单搜索 结束 -->
+
+<form onsubmit="return false;" data-auto="true" method="post">
+    <!--{empty name='list'}-->
+    <p class="help-block text-center well">没 有 记 录 哦！</p>
+    <!--{else}-->
+    <input type="hidden" value="resort" name="action">
+    <table class="layui-table" lay-skin="line">
+        <thead>
+        <tr>
+            <th class='list-table-check-td think-checkbox'>
+                <input data-auto-none="" data-check-target='.list-check-box' type='checkbox'>
+            </th>
+            <th class='text-left nowrap'>台账日期</th>
+            <th class='text-left nowrap'>区域</th>
+            <th class='text-left nowrap'>客户名</th>
+            <th class='text-left nowrap'>所属业务员</th>
+            <th class='text-left nowrap'>收款</th>
+            <th class='text-left nowrap'>上月结转</th>
+            <th class='text-left nowrap'>客户类型</th>
+            <th class='text-left nowrap'>状态</th>
+            <th class='text-left nowrap'></th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--{foreach $list as $key=>$vo}-->
+        <tr>
+            <td class='list-table-check-td think-checkbox'>
+                {if $vo.status != 2}
+                <input class="list-check-box" value='{$vo.id}' type='checkbox'>
+                {/if}
+            </td>
+            <td class='text-left nowrap'>{$vo.ledger_date|date='Y-m'}</td>
+            <td class='text-left nowrap'>{php}echo service\RegionService::fullName($vo['region_code']){/php}</td>
+            <td class='text-left nowrap'>{$vo.cust_name|default=""}</td>
+            <td class='text-left nowrap'>{$vo.real_name|default=""}</td>
+            <td class='text-left nowrap'>{$vo.receipt_refund|default="0.00"}</td>
+            <td class='text-left nowrap'>{$vo.last_carry_down|default="0.00"}</td>
+            <td class='text-left nowrap'>
+                {switch $vo.cust_type}
+                {case 1}<span class="layui-badge layui-bg-orange">仓储服务商</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-green">物流配送商</span>{/case}
+                {case 3}<span class="layui-badge layui-bg-cyan">分公司</span>{/case}
+                {case 4}<span class="layui-badge layui-bg-blue">KA</span>{/case}
+                {case 5}<span class="layui-badge layui-bg-black">盐业公司</span>{/case}
+                {default /}
+                {/switch}
+            </td>
+            <td class='text-left nowrap'>
+                {switch $vo.status}
+                {case 0}<span class="layui-badge layui-bg-gray">未冻结</span>{/case}
+                {case 1}<span class="layui-badge layui-bg-green">已冻结</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-orange">已审核</span>{/case}
+                {/switch}
+            </td>
+            <td class='text-left nowrap'>
+                <a href='/admin.html#/ledger/ledger_detail/index.html?ledger_date={$vo.ledger_date|date="Y-m"}%2B-%2B{$vo.ledger_date|date="Y-m"}&cust_id={$vo.cust_id}'>明细</a>
+            </td>
+        </tr>
+        <!--{/foreach}-->
+        </tbody>
+    </table>
+    {if isset($page)}<p>{$page|raw}</p>{/if}
+    <!--{/empty}-->
+</form>
+<script>
+    (function () {
+        window.form.render();
+    })();
+</script>
+{/block}

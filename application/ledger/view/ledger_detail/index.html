@@ -1,0 +1,272 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+<!--{if auth("$classuri/add")}-->
+<button data-open='{:url("$classuri/add")}' data-title="添加台账明细" class='layui-btn layui-btn-sm layui-btn-primary'>添加台账明细</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<style>
+    .layui-table td, .layui-table th {
+        padding: 9px 0px;
+        min-height: 20px;
+        line-height: 20px;
+    }
+    .gd1{max-width: 300px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+    .gd2{width: 70px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+    .bg1{ background-color: #fffdbd; font-weight: bold; /*border-top:1.5px double #adadad;*/}
+    .bg2{ background-color: #f2f2f2;}
+    .bg3{ font-weight:bold; color:#ff0000}
+    .label-required::after{ position: static;}
+    .ledger_header li{ margin:0; padding:0; width:200px; float: left;}
+</style>
+
+<!-- 表单搜索 开始 -->
+<form autocomplete="off" class="layui-form layui-form-pane form-search" action="{:request()->url()}" onsubmit="return false" method="get">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">台账日期</label>
+        <div class="layui-input-inline">
+            <input name="ledger_date" required="date" id='ledger_date' value="{if $Think.get.ledger_date}{$Think.get.ledger_date}{else}{:date('Y-m', strtotime('-2 Month'))} - {:date('Y-m')}{/if}" placeholder="请选台账日期" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">客户名称</label>
+        <div class="layui-input-inline">
+            <select name="cust_id" lay-verify="required" lay-search>
+                <option value=''>=== 请选择 ===</option>
+                <!--{foreach custs as $cust}-->
+                <!--{eq name='cust.id' value='$Think.get.cust_id|default=0'}-->
+                <option selected value='{$cust.id}'>{$cust.cust_name}</option>
+                <!--{else}-->
+                <option value='{$cust.id}'>{$cust.cust_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-inline">
+            <select name="status" lay-search>
+                <option {if $Think.get.status===''}selected="selected"{/if} value="">=== 请选择 ===</option>
+                <option {if $Think.get.status==='0'}selected="selected"{/if} value="0">未冻结</option>
+                <option {if $Think.get.status==='1'}selected="selected"{/if} value="1">已冻结</option>
+                <option {if $Think.get.status==='2'}selected="selected"{/if} value="2">已审核</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button lay-submit lay-filter="*"  class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+</form>
+
+<script>
+    window.laydate.render({range: true, elem: '#ledger_date', type:'month', showBottom:true});
+    window.form.render();
+</script>
+<!-- 表单搜索 结束 -->
+<form onsubmit="return false;" data-auto="true" method="post">
+    {if $Think.get.cust_id AND $Think.get.ledger_date}
+    <table class="layui-table" lay-skin="line">
+        <thead>
+        <tr class="layui-bg-cyan">
+            <th class='text-left nowrap'>客户名</th>
+            <th class='text-left nowrap'>客户区域</th>
+            <th class='text-left nowrap'>客户类型</th>
+            <th class='text-left nowrap'>所属业务员</th>
+            <th class='text-left nowrap'>客户地址</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class='text-left nowrap'>{$customer.cust_name}</td>
+            <td class='text-left nowrap'>{php}echo service\RegionService::fullName($customer['region_code']){/php}</td>
+            <td class='text-left nowrap'>
+                {switch $customer.cust_type}
+                {case 1}<span class="layui-badge layui-bg-orange">仓储服务商</span>{/case}
+                {case 2}<span class="layui-badge layui-bg-green">物流配送商</span>{/case}
+                {case 3}<span class="layui-badge layui-bg-cyan">分公司</span>{/case}
+                {case 4}<span class="layui-badge layui-bg-blue">KA</span>{/case}
+                {case 5}<span class="layui-badge layui-bg-black">盐业公司</span>{/case}
+                {default /}
+                {/switch}
+            </td>
+            <td class='text-left nowrap'>{$customer.real_name}</td>
+            <td class='text-left nowrap'>{$customer.addr}</td>
+        </tr>
+        </tbody>
+    </table>
+    {/if}
+
+    {if empty($ledger_detail)}
+    <!--<p class="help-block text-center well">没 有 记 录 哦！</p>-->
+    {else}
+    <table class="layui-table" lay-skin="line">
+        <tbody>
+        {assign name="amount" value="0" /}
+        {assign name="qty" value="0" /}
+        {assign name="rebate" value="0" /}
+        {assign name="profit_amount" value="0" /}
+
+        {foreach $ledger_detail as $key => $vo}
+            {assign name="ledger_date" value="$key" /}
+            {if ($ledger_date == '' OR $ledger_date == $key)}
+                <tr class="layui-bg-blue ledger">
+                    <td class='text-left nowrap' colspan="20">
+                        <ul class="ledger_header">
+                            <li>
+                                <i class="layui-icon layui-icon-date"></i>
+                                <span>台账日期</span>
+                                <span class="layui-badge ledger_date">{$key|date='Y-m'}</span>&nbsp;&nbsp;&nbsp;
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-password"></i>
+                                <span class="status" status="{$ledger[$key]['status']|default=0}">台账状态</span>
+                                {switch $ledger[$key]['status']|default=0}
+                                {case 0}<span class="layui-badge layui-bg-gray">未冻结</span>{/case}
+                                {case 1}<span class="layui-badge layui-bg-green">已冻结</span>{/case}
+                                {case 2}<span class="layui-badge layui-bg-orange">已审核</span>{/case}
+                                {default /}<span class="layui-badge layui-bg-gray">未冻结</span>
+                                {/switch}
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-rmb"></i>
+                                <span>上月结转</span>
+                                <span class="layui-badge layui-bg-cyan last_carry_down">
+                                    {$ledger[$key]['last_carry_down']|default='0.00'}
+                                </span>
+                            </li>
+                            <li>
+                                <i class="layui-icon layui-icon-rmb"></i>
+                                <span>当前余额</span>
+                                <span class="layui-badge layui-bg-green cust_balance">
+                                    {$ledger[$key]['cust_balance']|default='0.00'}
+                                </span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr class="bg2">
+                    <th class='text-left nowrap'>订单编号</th>
+                    <th class='text-left nowrap'>商品名称</th>
+                    <th class='text-left nowrap'>商品编码</th>
+                    <th class='text-left nowrap'>销售</th>
+                    <th class='text-left nowrap'>类型</th>
+                    <th class='text-left nowrap'>金额</th>
+                    <th class='text-left nowrap'>数量</th>
+                    <th class='text-left nowrap'>单价</th>
+                    <th class='text-left nowrap'>标准吨价</th>
+                    <th class='text-left nowrap'>运费</th>
+                    <th class='text-left nowrap'>包材品种差价</th>
+                    <th class='text-left nowrap'>折后出厂价</th>
+                    <!--<th class='text-left nowrap'>销售费</th>-->
+                    <!--<th class='text-left nowrap'>市场费</th>-->
+                    <th class='text-left nowrap'>原盐差价</th>
+                    <th class='text-left nowrap'>政策返利</th>
+                    <th class='text-left nowrap'>提成系数</th>
+                    <th class='text-left nowrap'>提成金额</th>
+                    <th class='text-left nowrap'>创建时间</th>
+                    <th class='text-left'></th>
+                </tr>
+            {/if}
+            {foreach $vo as $key2 => $vo2}
+                {switch $vo2.ledger_type_id}
+                    {case 1}{assign name="amount" value="$amount-$vo2.amount" /}{/case}
+                    {case 2}{assign name="amount" value="$amount+$vo2.amount" /}{/case}
+                    {case 3}{assign name="amount" value="$amount+$vo2.receipt_refund" /}{/case}
+                    {case 4}{assign name="amount" value="$amount-$vo2.receipt_refund" /}{/case}
+                    {default /}
+                {/switch}
+                {assign name="qty" value="$qty+$vo2.qty" /}
+                {assign name="rebate" value="$rebate+$vo2.rebate" /}
+                {assign name="profit_amount" value="$profit_amount+$vo2.profit_amount" /}
+                <tr>
+                    <td class='text-left nowrap'>{$vo2.order_no}</td>
+                    <td class='text-left nowrap'><div class="gd1" title="{$vo2.goods_name}">{$vo2.goods_name}</div></td>
+                    <td class='text-left nowrap'>{$vo2.goods_no}</td>
+                    <td class='text-left nowrap'>{$vo2.sales_mode_name}</td>
+                    <td class='text-left nowrap'>
+                        {switch $vo2.ledger_type_id}
+                        {case 1}<span class="layui-badge layui-bg-blue">发货</span>{/case}
+                        {case 2}<span class="layui-badge">退货</span>{/case}
+                        {case 3}<span class="layui-badge layui-bg-green">收款</span>{/case}
+                        {case 4}<span class="layui-badge layui-bg-orange">退款</span>{/case}
+                        {default /}
+                        {/switch}
+                    </td>
+                    <td class='text-left nowrap'>
+                        {if $vo2.ledger_type_id == 1 OR $vo2.ledger_type_id == 2}
+                            {$vo2.amount}
+                        {else}
+                            {$vo2.receipt_refund}
+                        {/if}
+                    </td>
+                    <td class='text-left nowrap'>{$vo2.qty}</td>
+                    <td class='text-left nowrap'>{$vo2.unit_price}</td>
+                    <td class='text-left nowrap'>{$vo2.tun_per_price}</td>
+                    <td class='text-left nowrap'>{$vo2.trans_fee}</td>
+                    <td class='text-left nowrap'>{$vo2.spread_price}</td>
+                    <td class='text-left nowrap'>{$vo2.discount_price}</td>
+                    <!--<td class='text-left nowrap'>{//$vo2.sales_fee}</td>-->
+                    <!--<td class='text-left nowrap'>{//$vo2.market_fee}</td>-->
+                    <td class='text-left nowrap'>{$vo2.salt_spread_price}</td>
+                    <td class='text-left nowrap'>{$vo2.rebate}</td>
+                    <td class='text-left nowrap'>{$vo2.profit_rate}</td>
+                    <td class='text-left nowrap'>{$vo2.profit_amount}</td>
+                    <td class='text-left nowrap'>{$vo2.created_at|date='Y-m-d'}</td>
+                    <td class='text-left nowrap'>
+                        {if auth("$classuri/edit")}
+                        <span class="text-explode">|</span>
+                        <a data-title="编辑" data-open='{:url("$classuri/edit")}?id={$vo2.id}'>编辑</a>
+                        {/if}
+
+                        {if auth("$classuri/del")}
+                        <span class="text-explode">|</span>
+                        <a data-update="{$vo2.id}" data-field='delete' data-action='{:url("$classuri/del")}?id={$vo2.id|default="0"}'>删除</a>
+                        {/if}
+                    </td>
+                </tr>
+            {/foreach}
+
+            {if ($ledger_date == '' OR $ledger_date == $key)}
+                <tr class="bg1">
+                    <td class='text-left nowrap'>小计</td>
+                    <td class='text-left nowrap' colspan="4"></td>
+                    <td class='text-left nowrap amount'>{$amount|number_format=2,'.',''}</td>
+                    <td class='text-left nowrap'>{$qty|number_format=2,'.',''}</td>
+                    <td class='text-left nowrap' colspan="6"></td>
+                    <td class='text-left nowrap'>{$rebate|number_format=2,'.',''}</td>
+                    <td class='text-left nowrap'></td>
+                    <td class='text-left nowrap'>{$profit_amount|number_format=2,'.',''}</td>
+                    <td class='text-left nowrap' colspan="2"></td>
+                </tr>
+                {assign name="amount" value="0" /}
+                {assign name="qty" value="0" /}
+                {assign name="rebate" value="0" /}
+                {assign name="profit_amount" value="0" /}
+            {/if}
+        {/foreach}
+        </tbody>
+    </table>
+    {if isset($page)}<p>{$page|raw}</p>{/if}
+    {/if}
+</form>
+
+<script>
+//    $(function(){
+//        // 上月结转
+//        var last_carry_down = $($('.ledger')[1]).find('.cust_balance').text();
+//        $($('.ledger')[0]).find('.last_carry_down').text(last_carry_down);
+//
+//        // 当前余额
+//        var amount = $($('.bg1')[0]).find('.amount').text();
+//        var cur_amount = (parseFloat(last_carry_down) + parseFloat(amount)).toFixed(2);
+//        $($('.ledger')[0]).find('.cust_balance').text(cur_amount);
+//    });
+</script>
+{/block}

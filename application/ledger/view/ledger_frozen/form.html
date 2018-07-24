@@ -1,0 +1,500 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+    <!--{if auth("$classuri/add")}-->
+    <button data-open='{:url("$classuri/index")}' data-title="台账明细列表" class='layui-btn layui-btn-sm layui-btn-primary'>台账明细列表</button>
+    <!--{/if}-->
+{/block}
+
+{block name="content"}
+<style>
+    select.block{
+        display:none!important;
+    }
+    .layui-form-checkbox i{
+        border-left:1px solid #d2d2d2;
+    }
+    .site-block {
+        padding: 5px;
+        margin:0 0px;
+        border: 1px solid #eee;
+     }
+    .site-text {
+        position: relative;
+    }
+    #goods, #money{
+        display:none;
+    }
+    .price{width:100%;}
+    .price1{width:50%; float:left;}
+    .price1 input{padding-left:4px;}
+    .price2{float:left; padding-left:5px; height:38px; line-height:38px;}
+    .layui-table td, .layui-table th {
+        position: relative;
+        padding: 5px 5px;
+        min-height: 20px;
+        line-height: 20px;
+    }
+    .gd1{width: 100px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+    .gd2{width: 70px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+    .must{color:#ff0000;}
+</style>
+<form autocomplete="off" onsubmit="return false;" action="{:request()->url()}" data-auto="true" method="post" class='layui-form layui-box'>
+
+    <div class="layui-form-item layui-block">
+        <label class="layui-form-label">当前区域</label>
+        <div class="layui-form-mid layui-word-aux">
+            {php}echo service\RegionService::fullName(){/php}
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">台账日期</label>
+        <div class="layui-input-inline">
+            <input name="ledger_date" id='ledger_date' required="date" value="{:date('Y-m')}" placeholder="请选台账日期" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">选择客户</label>
+        <div class="layui-input-inline">
+            <select name="cust_id" lay-verify="required" lay-filter="cust_id" required lay-search>
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach customer_saleses as $customer_sales}-->
+                <!--{eq name='customer_sales.id' value='$vo.cust_id|default=0'}-->
+                <option selected value='{$customer_sales.id}' title="{$customer_sales.real_name|default='--'}">{$customer_sales.cust_name}</option>
+                <!--{else}-->
+                <option value='{$customer_sales.id}' title="{$customer_sales.real_name|default='--'}">{$customer_sales.cust_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">客户所属业务员</label>
+        <div class="layui-form-mid layui-word-aux" id="sales_name"></div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">台账类型</label>
+        <div class="layui-input-block">
+            <select name="ledger_type_id" lay-verify="required" required lay-filter="ledger_type_id" lay-search>
+                <option value="">=== 请选择 ===</option>
+                <option selected="selected" value="1" {eq name='1' value='$vo.ledger_type_id|default=""'}selected{/eq}>发货</option>
+                <option selected="selected" value="2" {eq name='2' value='$vo.ledger_type_id|default=""'}selected{/eq}>退货</option>
+                <option selected="selected" value="3" {eq name='3' value='$vo.ledger_type_id|default=""'}selected{/eq}>收款</option>
+                <option selected="selected" value="4" {eq name='4' value='$vo.ledger_type_id|default=""'}selected{/eq}>退款</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 发货、退货 -->
+    <div class="site-text site-block" id="goods">
+        <button type="button" data-title="选择商品" class='layui-btn layui-btn-sm' id="select_goods">选择商品</button>
+        <button type="button" data-title="清空商品" class='layui-btn layui-btn-sm layui-btn-danger' id="clear_goods">清空商品</button>
+
+        <table class="layui-table" lay-skin="line">
+            <thead>
+            <tr>
+                <th class="text-left nowrap">商品名称</th>
+                <th class="text-left nowrap">商品编码</th>
+                <th class="text-left nowrap">销售方式</th>
+                <th class="text-left nowrap">单价</th>
+                <th class="text-left nowrap">标准吨价</th>
+                <th class="text-left nowrap">包材品种差价</th>
+                <th class="text-left nowrap">市场费</th>
+                <th class="text-left nowrap">数量 <span class="must">*</span></th>
+                <th class="text-left nowrap">运费 <span class="must">*</span></th>
+                <th class="text-left nowrap">金额</th>
+                <th class="text-left nowrap">折后出厂价</th>
+                <th class="text-left nowrap">提成系数</th>
+                <th class="text-left nowrap">销售提成</th>
+                <th class="text-left nowrap">销售费</th>
+                <th class="text-left nowrap"></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- 收款、退款 -->
+    <div class="layui-form-item layui-block" id="money">
+        <label class="layui-form-label">收/退款金额</label>
+        <div class="layui-input-block">
+            <input name="receipt_refund" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" />
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="col-sm-7 col-sm-offset-2">
+        <div class="layui-form-item text-center">
+            {if !empty($vo.id)}<input type="hidden" name="id" value="{$vo.id}">{/if}
+            <button lay-submit lay-filter="*" class="layui-btn" type="submit">保存配置</button>
+            <button class="layui-btn layui-btn-danger" type='button' onclick="window.history.back()">取消编辑</button>
+        </div>
+    </div>
+    <script>
+        var profits;
+        (function () {
+            window.laydate.render({range: false, elem: '#ledger_date', type:'month', showBottom:true});
+            window.form.render();
+            form.on('select(cust_id)', function(data){
+                $('#sales_name').text(data.elem[data.elem.selectedIndex].title);
+            });
+            form.on('select(ledger_type_id)', function(data){
+                ledger_detail(data.value);
+            });
+            $('#select_goods').on('click',function(){
+                layer.open({
+                    title: '选择商品',
+                    type: 2,
+//                    maxmin: true,
+                    shadeClose: true, //点击遮罩关闭层
+                    area : ['1200px' , '620px'],
+                    btn: ['确定'],
+                    content: '{:url("$classuri/goods")}',
+                    yes: function(index, layero){
+                        var res = window["layui-layer-iframe" + index].callbackdata();
+//                        console.log(res);
+                        $.ajax('/ledger/ledger_detail/goods', {method: 'post', data: {'ids':res}, dataType: 'json'}).done(function (response) {
+//                            console.log(response);
+                            if (response.code == 0){
+                                profits = JSON.parse(response.profit);
+                                var html = '';
+                                $.each(response.goods, function(i, goods){
+                                    html += '<tr>';
+                                    html += '<td class="text-left nowrap"><div class="gd1" title="' + goods.goods_name + '">' + goods.goods_name + '</div></td>';
+                                    html += '<td class="text-left nowrap"><div class="gd2" title="' + goods.goods_no + '">' + goods.goods_no + '</div></td>';
+                                    html += '<td class="text-left nowrap">' + goods.sales_mode_name + '</td>';
+                                    // 单价
+                                    html += '<td class="text-left nowrap unit_price">'
+                                        + '<div class="price1"><input name="unit_price[]" value="' + goods.unit_price + '" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '<div class="price2">' + goods.unit_price + '</div>'
+                                        + '</td>';
+                                    // 标准吨价
+                                    html += '<td class="text-left nowrap tun_per_price">' + goods.tun_per_price + '</td>';
+                                    // 包材品种差价
+                                    html += '<td class="text-left nowrap spread_price">' + goods.spread_price + '</td>';
+                                    // 市场费
+                                    html += '<td class="text-left nowrap market_fee">' + goods.market_fee + '</td>';
+                                    // 数量qty
+                                    html += '<td class="text-left nowrap qty">'
+                                        + '<div class="price"><input name="qty[]" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '</td>';
+                                    // 运费trans_fee
+                                    html += '<td class="text-left nowrap trans_fee">'
+                                        + '<div class="price"><input name="trans_fee[]" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '</td>';
+                                    // 金额amount = 数量 * 单价
+                                    html += '<td class="text-left nowrap amount"></td>';
+                                    // 折后出厂价discount_price = 单价 - 包材品种差价 - 运费
+                                    html += '<td class="text-left nowrap discount_price">'
+                                        + '<div class="price1"><input name="discount_price[]" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '<div class="price2"></div>'
+                                        + '</td>';
+                                    // 提成系数profit_rate
+                                    html += '<td class="text-left nowrap profit_rate">'
+                                        + '<div class="price1"><input name="profit_rate[]" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '<div class="price2"></div>'
+                                        + '</td>';
+                                    // 销售提成profit_amount = 数量 * 提成系数 * 标准吨价
+                                    html += '<td class="text-left nowrap profit_amount">'
+                                        + '<div class="price1"><input name="profit_amount[]" value="" required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" /></div>'
+                                        + '<div class="price2"></div>'
+                                        + '</td>';
+                                    // 销售费 = 销售提成 * 0.5
+                                    html += '<td class="text-left nowrap sales_fee"></td>';
+                                    html += '<td class="text-left nowrap"><a class="del">删除</a></td>';
+
+                                    // 隐藏数据
+                                    html +=
+                                        '<input type="hidden" name="goods_id[]" value="' + goods.id + '" />'
+                                        + '<input type="hidden" name="sales_mode_id[]" value="' + goods.sales_mode_id + '" />'
+                                        + '<input type="hidden" name="goods_name[]" value="' + goods.goods_name + '" />'
+                                        + '<input type="hidden" name="goods_no[]" value="' + goods.goods_no + '" />'
+                                        + '<input type="hidden" name="sales_mode_name[]" value="' + goods.sales_mode_name + '" />'
+                                        + '<input type="hidden" name="tun_per_price[]" value="' + goods.tun_per_price + '" />'
+                                        + '<input type="hidden" name="spread_price[]" value="' + goods.spread_price + '" />'
+                                        + '<input type="hidden" name="market_fee[]" value="' + goods.market_fee + '" />'
+                                        + '<input type="hidden" name="unit_market_fee[]" value="' + goods.market_fee + '" />'
+                                        + '<input type="hidden" name="amount[]" value="" />'
+                                        + '<input type="hidden" name="sales_fee[]" value="" />'
+                                        + '<input type="hidden" name="sys_discount_price[]" value="" />'
+                                        + '<input type="hidden" name="sys_profit_rate[]" value="" />'
+                                        + '<input type="hidden" name="sys_profit_amount[]" value="" />'
+                                    ;
+                                    html += '</tr>';
+                                });
+//                                console.log('HTML', html)
+                                $('tbody').html(html);
+                            }
+                        });
+                        //关闭弹出层
+                        layer.close(index);
+                    }
+                });
+            });
+
+            // 删除选中的商品
+            $('table').on('click', '.del', function(){
+                $(this).parent().parent().remove();
+            });
+
+            // 清空商品
+            $('#clear_goods').on('click', function(){
+                $('tbody').html('');
+            });
+        })();
+
+        // === 计算结果
+        $('tbody').on('keyup', 'input', function(){
+            var input = $(this);
+            var attr = $(this).attr('name');
+
+            var unit_price = get_val(input, 'unit_price', 'input');
+            var tun_per_price = get_val(input, 'tun_per_price', 'text');
+            var spread_price = get_val(input, 'spread_price', 'text');
+            var market_fee = get_val(input, 'market_fee', 'text');
+            var unit_market_fee = get_val(input, 'unit_market_fee', 'input');
+            var qty = get_val(input, 'qty', 'input');
+            var trans_fee = get_val(input, 'trans_fee', 'input');
+            var amount = get_val(input, 'amount', 'text');
+            var discount_price = get_val(input, 'discount_price', 'input');
+            var profit_rate = get_val(input, 'profit_rate', 'input');
+            var profit_amount = get_val(input, 'profit_amount', 'input');
+            var sales_fee = get_val(input, 'sales_fee', 'input');
+
+//            + '<input type="hidden" name="amount[]" value="" />'
+//            + '<input type="hidden" name="sales_fee[]" value="" />'
+//            + '<input type="hidden" name="sys_discount_price[]" value="" />'
+//            + '<input type="hidden" name="sys_profit_rate[]" value="" />'
+//            + '<input type="hidden" name="sys_profit_amount[]" value="" />'
+            switch (attr){
+                case 'unit_price[]': //单价
+                    amount = parseFloat(qty * unit_price).toFixed(2);
+                    set_val(input, 'amount', amount, 'text');
+                    set_val(input, 'amount', amount, 'input');
+
+                    discount_price = unit_price - spread_price - trans_fee;
+                    set_val(input, 'discount_price', discount_price, 'input');
+                    set_val(input, 'discount_price', discount_price, 'price2');
+                    set_val(input, 'sys_discount_price', discount_price, 'input');
+
+                    profit_rate = get_profit(input);
+                    set_val(input, 'profit_rate', profit_rate, 'input');
+                    set_val(input, 'profit_rate', profit_rate, 'price2');
+                    set_val(input, 'sys_profit_rate', profit_rate, 'input');
+
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+                    break;
+
+                case 'tun_per_price[]': //标准吨价
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+                    break;
+
+                case 'spread_price[]': //包材品种差价
+                    discount_price = unit_price - spread_price - trans_fee;
+                    set_val(input, 'discount_price', discount_price, 'input');
+                    set_val(input, 'discount_price', discount_price, 'price2');
+                    set_val(input, 'sys_discount_price', discount_price, 'input');
+
+                    profit_rate = get_profit(input);
+                    set_val(input, 'profit_rate', profit_rate, 'input');
+                    set_val(input, 'profit_rate', profit_rate, 'price2');
+                    set_val(input, 'sys_profit_rate', profit_rate, 'input');
+
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+
+                    break;
+
+                case 'market_fee[]': //市场费
+                    break;
+
+                case 'qty[]': //数量
+                    amount = parseFloat(qty * unit_price).toFixed(2);
+                    set_val(input, 'amount', amount, 'text');
+                    set_val(input, 'amount', amount, 'input');
+
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+
+                    market_fee = parseFloat(qty * unit_market_fee).toFixed(2);
+                    set_val(input, 'market_fee', market_fee, 'text');
+                    set_val(input, 'market_fee', market_fee, 'input');
+                    break;
+
+                case 'trans_fee[]': //运费
+                    discount_price = unit_price - spread_price - trans_fee;
+                    set_val(input, 'discount_price', discount_price, 'input');
+                    set_val(input, 'discount_price', discount_price, 'price2');
+                    set_val(input, 'sys_discount_price', discount_price, 'input');
+
+                    profit_rate = get_profit(input);
+                    set_val(input, 'profit_rate', profit_rate, 'input');
+                    set_val(input, 'profit_rate', profit_rate, 'price2');
+                    set_val(input, 'sys_profit_rate', profit_rate, 'input');
+
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+                    break;
+
+                case 'amount[]': //金额 = 数量 * 单价
+                    break;
+
+                case 'discount_price[]': //折后出厂价 = 单价 - 包材品种差价 - 运费
+                    profit_rate = get_profit(input);
+                    set_val(input, 'profit_rate', profit_rate, 'input');
+                    set_val(input, 'profit_rate', profit_rate, 'price2');
+                    set_val(input, 'sys_profit_rate', profit_rate, 'input');
+
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+
+                    break;
+
+                case 'profit_rate[]': //提成系数 = 折后出厂价 对应参数表里的系数
+                    profit_amount = parseFloat(qty * profit_rate * tun_per_price).toFixed(2);
+                    set_val(input, 'profit_amount', profit_amount, 'input');
+                    set_val(input, 'profit_amount', profit_amount, 'price2');
+                    set_val(input, 'sys_profit_amount', profit_amount, 'input');
+
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+                    break;
+
+                case 'profit_amount[]': //销售提成 = 数量 * 提成系数 * 标准吨价
+                    sales_fee = parseFloat(profit_amount * 0.5).toFixed(2);
+                    set_val(input, 'sales_fee', sales_fee, 'text');
+                    set_val(input, 'sales_fee', sales_fee, 'input');
+                    break;
+
+                case 'sales_fee[]': //销售费 = 销售提成 / 2
+                    break;
+
+                default:
+            }
+        });
+
+        // 获取值
+        function get_val(obj, class_name, type){
+            var v;
+            switch (type){
+                case 'text':
+                    v = obj.parents('tr').find('.'+class_name).text() || 0.00;
+                    break;
+                case 'input':
+                    v = obj.parents('tr').find('input[name="'+class_name+'[]"]').val() || 0.00;
+                    break;
+                case 'price2':
+                    v = obj.parents('tr').find('.' + class_name + ' .price2').text() || 0.00;
+                    break;
+                default:
+            }
+
+            return parseFloat(v).toFixed(2);
+        }
+
+        // 设置值
+        function set_val(obj, class_name, value, type){
+            value = parseFloat(value).toFixed(2);
+            switch (type){
+                case 'text':
+                    obj.parents('tr').find('.' + class_name).text(value);
+                    break;
+                case 'input':
+                    obj.parents('tr').find('input[name="' + class_name + '[]"]').val(value);
+                    break;
+                case 'price2':
+                    obj.parents('tr').find('.' + class_name + ' .price2').text(value);
+                    break;
+                default:
+            }
+        }
+
+        // 获取提成参数
+        function get_profit(input){
+            var profit = 0;
+            var sales_mode_id = parseInt(get_val(input, 'sales_mode_id', 'input'));
+            var discount_price = get_val(input, 'discount_price', 'input');
+            $.each(profits, function(i, item){
+                if (item.sales_mode_id == sales_mode_id){
+                    $.each(item.list, function(i2, item2){
+                        var result = eval(discount_price + item2.sign + item2.price);
+                        if (result){
+                            profit = parseFloat(item2.rate).toFixed(2); // 提成系数
+                            return false;
+                        }
+                    });
+                }
+            });
+
+            return profit;
+        }
+
+        function ledger_detail(v){
+            if (v == 1 || v == 2 ){
+                $('tbody').html('');
+                $('#goods').show();
+                $('#money').hide();
+            }
+            if (v == 3 || v == 4 ){
+                $('tbody').html('');
+                $('#goods').hide();
+                $('#money').show().html();
+            }
+        }
+    </script>
+    <style>
+        .background-item {
+            padding: 15px;
+            background: #efefef;
+        }
+
+        .background-item thead tr {
+            background: #e0e0e0
+        }
+    </style>
+</form>
+{/block}

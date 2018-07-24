@@ -1,0 +1,75 @@
+{extend name='admin@public/content'}
+
+{block name="content"}
+
+<table class="layui-table" lay-even lay-skin="line">
+    <colgroup>
+        <col width="20%">
+        <col width="30%">
+        <col width="20%">
+        <col width="30%">
+    </colgroup>
+    <thead>
+    <tr>
+        <th class="text-left" colspan="2">系统信息</th>
+        <th class="text-left" colspan="2">产品团队</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td style="max-width:200px" class="nowrap">系统版本</td>
+        <td class="nowrap">{:sysconf('app_version')}</td>
+        <td style="max-width:200px" class="nowrap">产品名称</td>
+        <td class="nowrap">台账管理系统</td>
+    </tr>
+    <tr>
+        <td class="nowrap">ThinkPHP 版本</td>
+        <td class="nowrap">{$think_ver}</td>
+        <td class="nowrap">产品名称</td>
+        <td class="nowrap">ThinkPHP</td>
+    </tr>
+    <tr>
+        <td class="nowrap">服务器操作系统</td>
+        <td class="nowrap">{:php_uname('s')}</td>
+        <td class="nowrap">产品DEMO体验</td>
+        <td class="nowrap">
+            <a target="_blank" href="http://localhost:8100">http://localhost:8100</a>
+        </td>
+    </tr>
+    <tr>
+        <td class="nowrap">WEB运行环境</td>
+        <td class="nowrap">{:php_sapi_name()}</td>
+        <td class="nowrap">官方网站</td>
+        <td class="nowrap">
+            <a target="_blank" href="http://localhost">http://localhost</a>
+        </td>
+    </tr>
+    <tr>
+        <td class="nowrap">MySQL数据库版本</td>
+        <td class="nowrap">{$mysql_ver}</td>
+        <td class="nowrap">BUG反馈</td>
+        <td class="nowrap">
+        </td>
+    </tr>
+    <tr>
+        <td class="nowrap">运行PHP版本</td>
+        <td class="nowrap">{$Think.PHP_VERSION}</td>
+        <td class="nowrap">项目地址</td>
+        <td class="nowrap">
+        </td>
+    </tr>
+    <tr>
+        <td class="nowrap">上传大小限制</td>
+        <td class="nowrap">{:ini_get('upload_max_filesize')}</td>
+        <td class="nowrap">公司官网</td>
+        <td class="nowrap"><a target="_blank" href="http://localhost">http://localhost</a></td>
+    </tr>
+    <tr>
+        <td class="nowrap">POST大小限制</td>
+        <td class="nowrap">{:ini_get('post_max_size')}</td>
+        <td class="nowrap">公司地址</td>
+        <td class="nowrap">成都市青羊区</td>
+    </tr>
+    </tbody>
+</table>
+{/block}

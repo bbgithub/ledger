@@ -1,0 +1,117 @@
+<style>
+    select.block{
+        display:none!important;
+    }
+</style>
+<form autocomplete="off" class="layui-form layui-box modal-form-box" action="{:request()->url()}" data-auto="true" method="post">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属区域</label>
+        <div class="layui-input-block">
+            <select name='region_code' lay-verify="required" required lay-search>
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach cates as $cate}-->
+                <!--{eq name='cate.region_code' value='$vo.region_code|default=0'}-->
+                <option selected value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name|default=''}</option>
+                <!--{else}-->
+                <option value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属业务员</label>
+        <div class="layui-input-block">
+            <select name='sales_id' lay-search>
+                <option selected value=''>=== 请选择 ===</option>
+                <!--{foreach sales as $sale}-->
+                <!--{eq name='sale.id' value='$vo.sales_id|default=0'}-->
+                <option selected value='{$sale.id}'>{$sale.real_name}</option>
+                <!--{else}-->
+                <option value='{$sale.id}'>{$sale.real_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户类型</label>
+        <div class="layui-input-block">
+            <select name="cust_type" lay-verify="required" required lay-search>
+                <option value="">=== 请选择 ===</option>
+                <option value="1" {eq name='1' value='$vo.cust_type|default=0'}selected{/eq}>仓储服务商</option>
+                <option value="2" {eq name='2' value='$vo.cust_type|default=0'}selected{/eq}>物流配送商</option>
+                <option value="3" {eq name='3' value='$vo.cust_type|default=0'}selected{/eq}>分公司</option>
+                <option value="4" {eq name='4' value='$vo.cust_type|default=0'}selected{/eq}>KA</option>
+                <option value="5" {eq name='5' value='$vo.cust_type|default=0'}selected{/eq}>盐业公司</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户名</label>
+        <div class="layui-input-block">
+            {if $vo and isset($vo.cust_name)}
+            <input readonly="readonly" disabled="disabled" name="cust_name" value='{$vo.cust_name|default=""}' required="required" title="请输入客户名" placeholder="请输入客户名" class="layui-input layui-bg-gray">
+            {else}
+            <input name="cust_name" value='{$vo.cust_name|default=""}' required="required" pattern="^.{2,80}$" title="请输入客户名" placeholder="请输入2~80位字符长度客户名" class="layui-input">
+            {/if}
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系人</label>
+        <div class="layui-input-block">
+            <input name="concat_name" pattern="^.{2,8}$" value='{$vo.concat_name|default=""}' title="请输入联系人" placeholder="请输入2~80位字符长度联系人" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系电话</label>
+        <div class="layui-input-block">
+            <input name="concat_phone" required="required" pattern="^.{5,20}$" value='{$vo.concat_phone|default=""}' title="请输入联系电话" placeholder="请输入5~20位字符长度联系电话" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">地址</label>
+        <div class="layui-input-block">
+            <input name="addr" pattern="^.{5,100}$" value='{$vo.addr|default=""}' title="请输入地址" placeholder="请输入5~100位字符长度地址" class="layui-input">
+        </div>
+    </div>
+
+    {if isset($roles)}
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-block">
+            {foreach $roles as $role}
+            <label class="think-checkbox">
+                <!--{if in_array($role['id'],$vo['role_id'])}-->
+                <input type="radio" checked name="role_id[]" value="{$role.id}" lay-ignore> {$role.role_name}
+                <!--{else}-->
+                <input type="radio" name="role_id[]" value="{$role.id}" lay-ignore> {$role.role_name}
+                <!--{/if}-->
+            </label>
+            {/foreach}
+            {if empty($roles)}<span class="color-desc" style="line-height:36px">未配置角色</span>{/if}
+        </div>
+    </div>
+    {/if}
+
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'>{/if}
+        <button lay-submit lay-filter="*" class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-close>取消编辑</button>
+    </div>
+</form>
+<script>
+    (function () {
+        window.form.render();
+    })();
+</script>

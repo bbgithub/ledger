@@ -1,0 +1,78 @@
+<style>
+    select.block{
+        display:none!important;
+    }
+</style>
+<form autocomplete="off" class="layui-form layui-box modal-form-box" action="{:request()->url()}" data-auto="true" method="post">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">销售方式</label>
+        <div class="layui-input-inline">
+            <select name="sales_mode_id" lay-verify="required" required lay-search>
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach cates as $cate}-->
+                <!--{eq name='cate.id' value='$vo.sales_mode_id|default=0'}-->
+                <option selected value='{$cate.id}'>{$cate.sales_mode_name}</option>
+                <!--{else}-->
+                <option value='{$cate.id}'>{$cate.sales_mode_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品名称</label>
+        <div class="layui-input-block">
+            <input name="goods_name" required="required" pattern="^.{1,100}$" value='{$vo.goods_name|default=""}' title="请输入商品名称" placeholder="请输入1~100位字符长度联系人" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品编码</label>
+        <div class="layui-input-block">
+            <input name="goods_no" required="required" pattern="^.{1,50}$" value='{$vo.goods_no|default=""}' title="请输入商品编码" placeholder="请输入1~50位字符长度商品编码" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">单价</label>
+        <div class="layui-input-block">
+            <input required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" placeholder="请输入单价" title="请输入单价" name="unit_price" value="{$vo.unit_price|default='0.00'}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">包材品种差价</label>
+        <div class="layui-input-block">
+            <input required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" placeholder="请输入包材品种差价" title="请输入包材品种差价" name="spread_price" value="{$vo.spread_price|default='0.00'}">
+        </div>
+    </div>
+
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label">市场费</label>-->
+        <!--<div class="layui-input-block">-->
+            <!--<input required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" placeholder="请输入市场费" title="请输入市场费" name="market_fee" value="{//$vo.market_fee|default=''}">-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">原盐差价</label>
+        <div class="layui-input-block">
+            <input required="required" onblur="this.value=(parseFloat(this.value)||0).toFixed(2)" class="layui-input" placeholder="请输入原盐差价" title="请输入原盐差价" name="salt_spread_price" value="{$vo.salt_spread_price|default='0.00'}">
+        </div>
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'>{/if}
+        <button lay-submit lay-filter="*" class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-close>取消编辑</button>
+    </div>
+</form>
+<script>
+    (function () {
+        window.form.render();
+    })();
+</script>

@@ -1,0 +1,157 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+<!--{if auth("$classuri/add")}-->
+<button data-modal='{:url("$classuri/add")}' data-title="添加用户" class='layui-btn layui-btn-sm layui-btn-primary'>添加用户</button>
+<!--{/if}-->
+
+<!--{if auth("$classuri/del")}-->
+<button data-update data-field='delete' data-action='{:url("$classuri/del")}' class='layui-btn layui-btn-sm layui-btn-primary'>删除用户</button>
+<!--{/if}-->
+{/block}
+
+{block name="content"}
+<!-- 表单搜索 开始 -->
+<form autocomplete="off" class="layui-form layui-form-pane form-search" action="{:request()->url()}" onsubmit="return false" method="get">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-inline">
+            <input name="username" value="{$Think.get.username|default=''}" placeholder="请输入用户名" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">姓名</label>
+        <div class="layui-input-inline">
+            <input name="real_name" value="{$Think.get.real_name|default=''}" placeholder="请输入姓名" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">联系电话</label>
+        <div class="layui-input-inline">
+            <input name="concat_phone" value="{$Think.get.concat_phone|default=''}" placeholder="请输入联系电话" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">区域</label>
+        <div class="layui-input-inline">
+            <select name='region_code' lay-search>
+                <option value="">=== 请选择 ===</option>
+                <!--{foreach cates as $cate}-->
+                <!--{eq name='cate.region_code' value='$Think.get.region_code|default=0'}-->
+                <option selected value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name|default=''}</option>
+                <!--{else}-->
+                <option value='{$cate.region_code}'>{$cate.spl|raw}{$cate.region_name}</option>
+                <!--{/eq}-->
+                <!--{/foreach}-->
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-inline">
+            <select name="role_id" lay-search>
+                <option value="">=== 请选择 ===</option>
+                <option value="1" {eq name='1' value='$Think.get.role_id|default=0'}selected{/eq}>业务员</option>
+                <option value="2" {eq name='2' value='$Think.get.role_id|default=0'}selected{/eq}>业务经理</option>
+                <option value="3" {eq name='3' value='$Think.get.role_id|default=0'}selected{/eq}>内务</option>
+                <option value="4" {eq name='4' value='$Think.get.role_id|default=0'}selected{/eq}>财务</option>
+                <option value="5" {eq name='5' value='$Think.get.role_id|default=0'}selected{/eq}>系统管理员</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+
+</form>
+<script>
+    window.laydate.render({range: true, elem: '#range-date'});
+</script>
+<!-- 表单搜索 结束 -->
+
+<form onsubmit="return false;" data-auto="true" method="post">
+    <!--{empty name='list'}-->
+    <p class="help-block text-center well">没 有 记 录 哦！</p>
+    <!--{else}-->
+    <input type="hidden" value="resort" name="action">
+    <table class="layui-table" lay-skin="line">
+        <thead>
+        <tr>
+            <th class='list-table-check-td think-checkbox'>
+                <input data-auto-none="" data-check-target='.list-check-box' type='checkbox'>
+            </th>
+            <th class='text-left nowrap'>ID</th>
+            <th class='text-left nowrap'>用户名</th>
+            <th class='text-left nowrap'>姓名</th>
+            <th class='text-left nowrap'>联系电话</th>
+            <th class='text-left nowrap'>区域</th>
+            <th class='text-left nowrap'>角色</th>
+            <th class='text-left nowrap'>状态</th>
+            <th class='text-left nowrap'></th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--{foreach $list as $key=>$vo}-->
+        <tr>
+            <td class='list-table-check-td think-checkbox'>
+                <input class="list-check-box" value='{$vo.id}' type='checkbox'>
+            </td>
+            <td class='text-left nowrap'>{$vo.id}</td>
+            <td class='text-left nowrap'>{$vo.username}</td>
+            <td class='text-left nowrap'>{$vo.real_name|default=""}</td>
+            <td class='text-left nowrap'>{$vo.concat_phone|default=""}</td>
+            <td class='text-left nowrap'>{php}echo service\RegionService::fullName($vo['region_code']){/php}</td>
+            <td class='text-left nowrap'>{$vo.role_name|default=""}</td>
+            <td class='text-left nowrap'>
+                {if $vo.status eq 0}<span class="color-red">禁用</span>{elseif $vo.status eq 1}<span class="color-green">启用</span>{/if}
+            </td>
+            <td class='text-left nowrap'>
+
+                {if auth("$classuri/edit")}
+                <span class="text-explode">|</span>
+                <a data-title="编辑用户" data-modal='{:url("$classuri/edit")}?id={$vo.id}'>编辑</a>
+                {/if}
+
+                {if auth("$classuri/auth")}
+                <span class="text-explode">|</span>
+                <a data-title="用户授权" data-modal='{:url("$classuri/auth")}?id={$vo.id}'>授权</a>
+                {/if}
+
+                {if auth("$classuri/pass")}
+                <span class="text-explode">|</span>
+                <a data-title="设置密码" data-modal='{:url("$classuri/pass")}?id={$vo.id}'>密码</a>
+                {/if}
+
+                {if $vo.status eq 1 and auth("$classuri/forbid")}
+                <span class="text-explode">|</span>
+                <a data-update="{$vo.id}" data-field='status' data-value='0' data-action='{:url("$classuri/forbid")}'>禁用</a>
+                {elseif auth("$classuri/resume")}
+                <span class="text-explode">|</span>
+                <a data-update="{$vo.id}" data-field='status' data-value='1' data-action='{:url("$classuri/resume")}'>启用</a>
+                {/if}
+
+                {if auth("$classuri/del")}
+                <span class="text-explode">|</span>
+                <a data-update="{$vo.id}" data-field='delete' data-action='{:url("$classuri/del")}'>删除</a>
+                {/if}
+
+            </td>
+        </tr>
+        <!--{/foreach}-->
+        </tbody>
+    </table>
+    {if isset($page)}<p>{$page|raw}</p>{/if}
+    <!--{/empty}-->
+</form>
+<script>
+    (function () {
+        window.form.render();
+    })();
+</script>
+{/block}

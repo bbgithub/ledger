@@ -1,0 +1,61 @@
+{extend name='admin@public/content'}
+
+{block name="button"}
+    <!--{if auth("$classuri/add")}-->
+    <button data-open='{:url("$classuri/index")}' data-title="列表" class='layui-btn layui-btn-sm layui-btn-primary'>列表</button>
+    <!--{/if}-->
+{/block}
+
+{block name="content"}
+<form autocomplete="off" onsubmit="return false;" action="{:request()->url()}" data-auto="true" method="post" class='form-horizontal padding-top-20'>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">销售方式</label>
+        <div class="layui-input-block">
+            <input autofocus name="sales_mode_name" value='{$vo.sales_mode_name|default=""}' required="required" title="请输入销售方式" placeholder="请输入销售方式" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">标准吨价</label>
+        <div class="layui-input-block">
+            <input autofocus name="tun_per_price" value='{$vo.tun_per_price|default=""}' required="required" title="请输入标准吨价" placeholder="请输入标准吨价" class="layui-input">
+        </div>
+    </div>
+
+
+    <!--<div class="layui-form-item">-->
+        <!--<label class="layui-form-label"></label>-->
+        <!--<div class="layui-input-block">-->
+            <!--{if isset($vo.status) AND ($vo.status == 1)}-->
+            <!--<input type="checkbox" name="status" title="启用" lay-skin="primary" value="1" checked>-->
+            <!--{else}-->
+            <!--<input type="checkbox" name="status" title="启用" lay-skin="primary" value="1">-->
+            <!--{/if}-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="col-sm-7 col-sm-offset-2">
+        <div class="layui-form-item text-center">
+            {if !empty($vo.id)}<input type="hidden" name="id" value="{$vo.id}">{/if}
+            <button class="layui-btn" type="submit">保存配置</button>
+            <button class="layui-btn layui-btn-danger" type='button' onclick="window.history.back()">取消编辑</button>
+        </div>
+    </div>
+
+    <script>window.form.render();</script>
+    <style>
+        .background-item {
+            padding: 15px;
+            background: #efefef;
+        }
+
+        .background-item thead tr {
+            background: #e0e0e0
+        }
+    </style>
+</form>
+{/block}

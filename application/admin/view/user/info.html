@@ -1,0 +1,79 @@
+<style>
+    select.block{
+        display:none!important;
+    }
+</style>
+<form autocomplete="off" class="layui-form layui-box modal-form-box" action="{:request()->url()}" data-auto="true" method="post">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">所属区域</label>
+        <div class="layui-input-block">{$region_name}</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+            {if $vo and isset($vo.username)}
+            <input readonly="readonly" disabled="disabled" name="username" value='{$vo.username|default=""}' required="required" title="请输入用户名" placeholder="请输入用户名" class="layui-input layui-bg-gray">
+            {else}
+            <input name="username" value='{$vo.username|default=""}' required="required" pattern="^.{2,50}$" title="请输入用户名" placeholder="请输入2位及以上字符用户名" class="layui-input">
+            {/if}
+        </div>
+    </div>
+
+    {if $vo and isset($vo.password)}
+    {else}
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+            <input name="password" value='{$vo.password|default="123456"}' required="required" pattern="^.{6,}$" title="请设置密码" placeholder="请设置6位及以上密码" class="layui-input">
+        </div>
+    </div>
+    {/if}
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">姓名</label>
+        <div class="layui-input-block">
+            <input name="real_name" required="required" pattern="^.{2,8}$" value='{$vo.real_name|default=""}' title="请输入姓名" placeholder="请输入2~8位字符长度姓名" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系电话</label>
+        <div class="layui-input-block">
+            <input type="tel" autofocus name="concat_phone" required="required" value='{$vo.concat_phone|default=""}' pattern="^1[0-9][0-9]{9}$" title="请输入手机" placeholder="请输入手机" class="layui-input">
+        </div>
+    </div>
+
+    {if isset($roles)}
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-block">
+            {foreach $roles as $role}
+            <label class="think-checkbox">
+                <!--{if in_array($role['id'],$vo['role_id'])}-->
+                <input type="radio" checked name="role_id[]" value="{$role.id}" lay-ignore> {$role.role_name}
+                <!--{else}-->
+                <input type="radio" name="role_id[]" value="{$role.id}" lay-ignore> {$role.role_name}
+                <!--{/if}-->
+            </label>
+            {/foreach}
+            {if empty($roles)}<span class="color-desc" style="line-height:36px">未配置角色</span>{/if}
+        </div>
+    </div>
+    {/if}
+
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'>{/if}
+        <button lay-submit lay-filter="*" class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-close>取消编辑</button>
+    </div>
+</form>
+<script>
+    (function () {
+        window.form.render();
+    })();
+</script>

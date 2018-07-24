@@ -1,0 +1,136 @@
+{block name="content"}
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>系统管理 · 台账管理系统</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link href="/static/plugs/awesome/css/font-awesome.min.css?v=180625" rel="stylesheet">
+    <link href="/static/plugs/bootstrap/css/bootstrap.min.css?v=180625" rel="stylesheet">
+    <link href="/static/plugs/layui/css/layui.css?v=180625" rel="stylesheet">
+    <link href="/static/theme/css/console.css?v=180625" rel="stylesheet">
+
+    <script>window.ROOT_URL = '';</script>
+    <script src="/static/plugs/jquery/pace.min.js"></script>
+    <script src="/static/plugs/layui/layui.all.js"></script>
+    <script src="/static/admin.js"></script>
+    <style>
+        select.block,.layui-form-checkbox{
+            display:none!important;
+        }
+        .framework-body {
+            right: 0;
+            bottom: 0;
+            top: 0px;
+            left: 0px;
+            /*position: fixed;*/
+            overflow-y: scroll;
+            overflow-x: hidden;
+            z-index: 1;
+            margin: 0 15px;
+        }
+        .layui-table td, .layui-table th {
+            position: relative;
+            padding: 5px 2px;
+            min-height: 20px;
+            line-height: 20px;
+        }
+        .modal-form-box {
+            padding: 0px 0px;
+        }
+    </style>
+</head>
+<body class="framework mini">
+
+
+
+<!-- 右则内容区域 开始 -->
+<div class="framework-body">
+
+
+<!-- 表单搜索 开始 -->
+<form autocomplete="off" class="layui-form layui-form-pane form-search" action="" onsubmit="return false" method="get">
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">商品名称</label>
+        <div class="layui-input-inline">
+            <input name="goods_name" value="{$Think.get.goods_name|default=''}" placeholder="请输入商品名称" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <label class="layui-form-label">商品编码</label>
+        <div class="layui-input-inline">
+            <input name="goods_no" value="{$Think.get.goods_no|default=''}" placeholder="请输入商品编码" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-inline">
+        <button class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe615;</i> 搜 索</button>
+    </div>
+
+</form>
+<!-- 表单搜索 结束 -->
+<form autocomplete="off" class="layui-form layui-box modal-form-box" action="{:request()->url()}" data-auto="true" method="post">
+    <!--{empty name='list'}-->
+    <!--<p class="help-block text-center well">没 有 记 录 哦！</p>-->
+    <!--{else}-->
+    <input type="hidden" value="resort" name="action">
+    <table class="layui-table" lay-skin="line">
+        <thead>
+        <tr>
+            <th class='list-table-check-td think-checkbox'>
+                <input data-auto-none="" data-check-target='.list-check-box' type='checkbox'>
+            </th>
+            <th class='text-left nowrap'>商品名称</th>
+            <th class='text-left nowrap'>商品编码</th>
+            <th class='text-left nowrap'>销售方式</th>
+            <th class='text-left nowrap'>单价</th>
+            <th class='text-left nowrap'>包材品种差价</th>
+            <th class='text-left nowrap'>市场费</th>
+            <th class='text-left nowrap'>原盐差价</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--{foreach $list as $key=>$vo}-->
+        <tr>
+            <td class='list-table-check-td think-checkbox'>
+                <input class="list-check-box" value='{$vo.id}' type='checkbox' name="ids[]">
+            </td>
+            <td class='text-left nowrap'>{$vo.goods_name|default=""}</td>
+            <td class='text-left nowrap'>{$vo.goods_no|default=""}</td>
+            <td class='text-left nowrap'>{$vo.sales_mode_name|default=""}</td>
+            <td class='text-left nowrap'>{$vo.unit_price|default=""}</td>
+            <td class='text-left nowrap'>{$vo.spread_price|default=""}</td>
+            <td class='text-left nowrap'>{$vo.market_fee|default=""}</td>
+            <td class='text-left nowrap'>{$vo.salt_spread_price|default=""}</td>
+        </tr>
+        <!--{/foreach}-->
+        </tbody>
+    </table>
+    {//if isset($page)}<p>{//$page|raw}</p>{///if}
+    <!--{/empty}-->
+</form>
+
+    <!--<script src="/static/plugs/require/require.js"></script>-->
+    <!--<script src="/static/app.js"></script>-->
+
+<script>
+    window.form.render();
+    var callbackdata = function () {
+        var valArr = new Array;
+        $("input:checked[name='ids[]']").each(function(i){
+            valArr[i] = $(this).val();
+        });
+        var priv = valArr.join(',');
+        return priv;
+    }
+</script>
+{/block}
+
+</div>
+<!-- 右则内容区域 结束 -->
+
+</body>
+</html>

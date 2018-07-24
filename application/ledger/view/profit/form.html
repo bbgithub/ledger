@@ -1,0 +1,34 @@
+<form autocomplete="off" class="layui-form layui-box" style='padding:25px 30px 20px 0' action="{:request()->url()}" data-auto="true" method="post">
+    <div class="layui-row">
+        {foreach :json_decode($vo['content'], TRUE) as $v}
+        <div class="layui-col-md5">
+            <div class="layui-input-block">
+                <div class="layui-form-item"><h3>{eq name="$v.sales_mode_id" value="1"}自主品牌{else/}代工{/eq}</h3></div>
+                <div class="layui-form-item">格式：条件, 值, 提成系数</div>
+                <div class="layui-form-item">(例：“>=, 390, 0.2”表示价格大于或等于390，且小于400时，系数为0.2)</div>
+            </div>
+            <div class="layui-form-item layui-input-block">
+                {php}
+                $content = '';
+                foreach($v['list'] as $v2):
+                    $content .= $v2['sign'] . ', ' . $v2['price'] . ', ' . $v2['rate'] . "\n";
+                endforeach;
+                {/php}
+                <input name="sales_mode_id[]" value='{$v.sales_mode_id}' type="hidden" class="layui-input">
+                <textarea placeholder="请输入提成参数" title="请输入提成参数"
+                          class="layui-textarea" name="content[]" style="height:420px;">{$content}</textarea>
+            </div>
+        </div>
+        {/foreach}
+    </div>
+
+    <div class="hr-line-dashed"></div>
+
+    <div class="layui-form-item text-center">
+        {if isset($vo['id'])}<input type='hidden' value='{$vo.id}' name='id'/>{/if}
+        <button class="layui-btn" type='submit'>保存数据</button>
+        <button class="layui-btn layui-btn-danger" type='button' data-confirm="" data-close>取消编辑</button>
+    </div>
+
+    <script>window.form.render();</script>
+</form>

@@ -1,0 +1,136 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "\u53f0\u8d26\u7ba1\u7406\u7cfb\u7edfAPI",
+        "description": "\u53f0\u8d26\u7ba1\u7406\u7cfb\u7edfAPI\uff0c\u4e3b\u8981\u4e3a\u53f0\u8d26APP\u63d0\u4f9b\u63a5\u53e3\uff0c\u7528\u4e8e\u4e1a\u52a1\u5458\u3001\u4e1a\u52a1\u7ecf\u7406\u67e5\u770b\u63d0\u6210\u6570\u636e\u3002",
+        "contact": {
+            "name": "15516026@qq.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8100",
+    "basePath": "/api",
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/user/login": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "\u7528\u6237\u767b\u5f55",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "formData",
+                        "description": "\u7528\u6237\u540d",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "\u5bc6\u7801",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\u767b\u5f55\u6210\u529f",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer",
+                                    "example": 200
+                                },
+                                "msg": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/User"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "petstore_auth": [
+                            "write:pets",
+                            "read:pets"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "Api": {},
+        "User": {
+            "properties": {
+                "id": {
+                    "description": "\u7528\u6237ID",
+                    "type": "integer"
+                },
+                "region_code": {
+                    "description": "\u533a\u57dfID",
+                    "type": "string"
+                },
+                "role_id": {
+                    "description": "\u89d2\u8272ID",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "\u7528\u6237\u540d",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "\u5bc6\u7801",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\u72b6\u6001",
+                    "type": "integer"
+                },
+                "token": {
+                    "description": "\u4ee4\u724c",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "responses": {
+        "Json": {
+            "description": "the basic response",
+            "schema": {
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "example": 200
+                    },
+                    "msg": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    }
+}
